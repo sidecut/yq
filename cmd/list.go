@@ -45,7 +45,7 @@ var listCmd = &cobra.Command{
 		data := make(map[string]interface{})
 		yaml.Unmarshal(buf, &data)
 
-		listKeys("", data)
+		listKeys(".", data)
 	},
 }
 
