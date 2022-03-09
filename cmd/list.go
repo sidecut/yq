@@ -17,8 +17,11 @@ package cmd
 
 import (
 	"fmt"
+	"log"
+	"os"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
 // listCmd represents the list command
@@ -26,8 +29,39 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List all keys in the file",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("list called")
+		if len(args) < 1 {
+			cmd.PrintErrln("Filename required")
+			return
+		}
+
+		filename := args[0]
+		buf, err := os.ReadFile(filename)
+		if err != nil {
+			cmd.PrintErrf("%v\n", err)
+		}
+
+		// yaml := string(buf)
+		// fmt.Printf("%v\n", yaml)
+		data := make(map[string]interface{})
+		yaml.Unmarshal(buf, &data)
+
+		listKeys(data)
 	},
+}
+
+func listKeys(data map[string]interface{}) {
+	for key, value := range data {
+		fmt.Printf("%v\n", key)
+		switch t := value.(type) {
+		case string:
+			// do nothing
+		case map[string]interface{}:
+			log.Println("Recursing")
+			listKeys(t)
+		default:
+			panic("I don't know which type this is")
+		}
+	}
 }
 
 func init() {
