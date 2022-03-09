@@ -17,8 +17,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
@@ -45,19 +45,19 @@ var listCmd = &cobra.Command{
 		data := make(map[string]interface{})
 		yaml.Unmarshal(buf, &data)
 
-		listKeys(data)
+		listKeys("", data)
 	},
 }
 
-func listKeys(data map[string]interface{}) {
+func listKeys(prefix string, data map[string]interface{}) {
 	for key, value := range data {
-		fmt.Printf("%v\n", key)
+		fmt.Printf("%v\n", strings.Join([]string{prefix, key}, "/"))
 		switch t := value.(type) {
 		case string:
 			// do nothing
 		case map[string]interface{}:
-			log.Println("Recursing")
-			listKeys(t)
+			// log.Println("Recursing")
+			listKeys(prefix+"/"+key, t)
 		default:
 			panic("I don't know which type this is")
 		}
