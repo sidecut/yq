@@ -17,12 +17,17 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
+
+type genericMap map[interface{}]interface{}
+type stringMap map[string]interface{}
+type interfaceArray []interface{}
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{
@@ -42,26 +47,36 @@ var listCmd = &cobra.Command{
 
 		// yaml := string(buf)
 		// fmt.Printf("%v\n", yaml)
-		data := make(map[string]interface{})
+		data := make(stringMap)
 		yaml.Unmarshal(buf, &data)
 
 		listKeys(".", data)
 	},
 }
 
-func listKeys(prefix string, data map[string]interface{}) {
+// listKeys recursively lists all the keys in a map[string]interface{}
+func listKeys(prefix string, data stringMap) {
 	for key, value := range data {
 		fmt.Printf("%v\n", strings.Join([]string{prefix, key}, "/"))
 		switch t := value.(type) {
 		case string:
 			// do nothing
-		case map[string]interface{}:
+		case stringMap:
 			// log.Println("Recursing")
 			listKeys(prefix+"/"+key, t)
+		case interfaceArray:
+			// This is an array of things
+			listArray(prefix, value.(interfaceArray))
 		default:
-			panic("I don't know which type this is")
+			log.Fatalf("I don't know which type this is: %T", t)
+			// panic("I don't know which type this is")
 		}
 	}
+}
+
+// listArray iterates through an array,
+func listArray(prefix string, array interfaceArray) {
+
 }
 
 func init() {
